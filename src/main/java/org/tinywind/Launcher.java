@@ -13,12 +13,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -98,7 +98,7 @@ public class Launcher {
     }
 
     @RequestMapping("login")
-    public String loginPage(HttpSession session, Model model, @ModelAttribute("code") String code, @ModelAttribute("state") String state) throws IOException {
+    public String loginPage(HttpSession session, Model model, @ModelAttribute("code") String code, @ModelAttribute("state") String state) {
         final String accessToken = getAccessToken(code);
         session.setAttribute("accessToken", accessToken);
         model.addAttribute("accessToken", accessToken);
@@ -106,6 +106,12 @@ public class Launcher {
         model.addAttribute("userInfo", getUserInfo(accessToken));
 
         return "user-info";
+    }
+
+    @RequestMapping("**")
+    @ResponseBody
+    public Map<String, String[]> anyPage(HttpServletRequest request) {
+        return request.getParameterMap();
     }
 
     private String getAccessToken(String code) {
@@ -123,7 +129,7 @@ public class Launcher {
         return accessToken.toString();
     }
 
-    private Map getUserInfo(String accessToken) throws IOException {
+    private Map getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
 
