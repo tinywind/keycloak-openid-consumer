@@ -40,18 +40,32 @@ import java.util.Random;
 public class Launcher {
 
     private static final Log log = LogFactory.getLog(Launcher.class);
-    private static final String SERVICE_DOMAIN = "http://localhost:8000";
-    private static final String KEYCLOAK_DOMAIN = "https://211.253.10.111:38443/auth/realms/";
-    private static final String KEYCLOAK_REALM = "apiserver";
-    private static final String KEYCLOAK_CLIENT_ID = "local";
-    private static final String KEYCLOAK_CLIENT_SECRET = "62327148-31f2-4680-8422-d7f0a94fc629";
+
+    private static final String SERVICE_DOMAIN;
+    private static final String KEYCLOAK_DOMAIN;
+    private static final String KEYCLOAK_REALM;
+    private static final String KEYCLOAK_CLIENT_ID;
+    private static final String KEYCLOAK_CLIENT_SECRET;
 
     private static final String KEYCLOAK_OPENID_SUB_URI = "/protocol/openid-connect/";
 
-    private static final String KEYCLOAK_AUTH_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "auth";
-    private static final String KEYCLOAK_TOKEN_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "token";
-    private static final String KEYCLOAK_USERINFO_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "userinfo";
-    private static final String KEYCLOAK_LOGOUT_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "logout";
+    private static final String KEYCLOAK_AUTH_URL;
+    private static final String KEYCLOAK_TOKEN_URL;
+    private static final String KEYCLOAK_USERINFO_URL;
+    private static final String KEYCLOAK_LOGOUT_URL;
+
+    static {
+        SERVICE_DOMAIN = System.getProperty("service.domain");
+        KEYCLOAK_DOMAIN = System.getProperty("keycloak.domain") + "/realms/";
+        KEYCLOAK_REALM = System.getProperty("keycloak.realm");
+        KEYCLOAK_CLIENT_ID = System.getProperty("keycloak.client.id");
+        KEYCLOAK_CLIENT_SECRET = System.getProperty("keycloak.client.secret");
+
+        KEYCLOAK_AUTH_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "auth";
+        KEYCLOAK_TOKEN_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "token";
+        KEYCLOAK_USERINFO_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "userinfo";
+        KEYCLOAK_LOGOUT_URL = KEYCLOAK_DOMAIN + KEYCLOAK_REALM + KEYCLOAK_OPENID_SUB_URI + "logout";
+    }
 
     private static void disableSslVerification() {
         try {
