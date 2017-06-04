@@ -1,5 +1,8 @@
 package org.tinywind;
 
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.SpringApplication;
@@ -19,11 +22,13 @@ import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Random;
 
@@ -35,7 +40,7 @@ import java.util.Random;
 public class Launcher {
 
     private static final Log log = LogFactory.getLog(Launcher.class);
-    private static final String MYSERVICE_DOMAIN = "http://localhost:8000";
+    private static final String SERVICE_DOMAIN = "http://localhost:8000";
     private static final String KEYCLOAK_DOMAIN = "https://211.253.10.111:38443/auth/realms/";
     private static final String KEYCLOAK_REALM = "apiserver";
     private static final String KEYCLOAK_CLIENT_ID = "local";
@@ -92,18 +97,20 @@ public class Launcher {
         session.setAttribute("state", state);
         model.addAttribute("state", state);
         model.addAttribute("clientId", KEYCLOAK_CLIENT_ID);
-        model.addAttribute("redirectUri", URLEncoder.encode(MYSERVICE_DOMAIN + redirectUri, "utf-8"));
+        model.addAttribute("redirectUri", URLEncoder.encode(SERVICE_DOMAIN + redirectUri, "utf-8"));
         model.addAttribute("KEYCLOAK_AUTH_URL", KEYCLOAK_AUTH_URL);
         return "main";
     }
 
     @RequestMapping("login")
-    public String loginPage(HttpSession session, Model model, @ModelAttribute("code") String code, @ModelAttribute("state") String state) {
-        final String accessToken = getAccessToken(code);
+    public String loginPage(HttpSession session, Model model, @ModelAttribute("code") String code, @ModelAttribute("state") String state) throws IOException {
+        KeycloakToken token = getToken(code);
+        final String accessToken = token.getAccessToken();
         session.setAttribute("accessToken", accessToken);
         model.addAttribute("accessToken", accessToken);
         model.addAttribute("sessionState", session.getAttribute("state"));
         model.addAttribute("userInfo", getUserInfo(accessToken));
+        model.addAttribute("token", token);
 
         return "user-info";
     }
@@ -114,19 +121,32 @@ public class Launcher {
         return request.getParameterMap();
     }
 
-    private String getAccessToken(String code) {
+    private KeycloakToken getToken(String code) throws IOException {
         final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.set("grant_type", "authorization_code");
         parameters.set("client_id", KEYCLOAK_CLIENT_ID);
         parameters.set("client_secret", KEYCLOAK_CLIENT_SECRET);
         parameters.set("code", code);
-        parameters.set("redirect_uri", MYSERVICE_DOMAIN + "/login");
+        parameters.set("redirect_uri", SERVICE_DOMAIN + "/login");
 
         RestTemplate restTemplate = new RestTemplate();
-        Map response = restTemplate.postForObject(KEYCLOAK_TOKEN_URL, parameters, Map.class);
-        Object accessToken = response.get("access_token");
+        String response = restTemplate.postForObject(KEYCLOAK_TOKEN_URL, parameters, String.class);
 
-        return accessToken.toString();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, false);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        KeycloakToken token = mapper.readValue(response, KeycloakToken.class);
+
+        for (String s : token.getIdToken().split("[.]")) {
+            try {
+                String decoded = new String(Base64.getDecoder().decode(s));
+                IdToken idToken = mapper.readValue(decoded, IdToken.class);
+                token.setId(idToken);
+            } catch (Exception ignored) {
+            }
+        }
+
+        return token;
     }
 
     private Map getUserInfo(String accessToken) {
