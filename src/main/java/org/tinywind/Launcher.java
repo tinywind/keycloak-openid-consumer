@@ -112,7 +112,7 @@ public class Launcher {
         model.addAttribute("state", state);
         model.addAttribute("clientId", KEYCLOAK_CLIENT_ID);
         model.addAttribute("redirectUri", URLEncoder.encode(SERVICE_DOMAIN + redirectUri, "utf-8"));
-        model.addAttribute("KEYCLOAK_AUTH_URL", KEYCLOAK_AUTH_URL);
+        model.addAttribute("authUrl", KEYCLOAK_AUTH_URL);
         return "main";
     }
 

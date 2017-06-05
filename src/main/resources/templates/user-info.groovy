@@ -1,7 +1,5 @@
 package templates
 
-//import static templates.tags.*
-
 yieldUnescaped '<!DOCTYPE html>'
 html {
     head {
@@ -10,20 +8,13 @@ html {
             yield 'li {white-space: nowrap;}'
         }
     }
-    body {
+    body (style: 'overflow: hidden; width: 100%;') {
         h1 'OpenId test'
 
         div 'state: ' + state
         div 'session.state: ' + sessionState
         div 'code: ' + code
         div(style: 'white-space: nowrap;') { yield 'accessToken: ' + accessToken }
-
-        h3 'user-info'
-        ul {
-            userInfo.forEach {
-                key, value -> li key + ' -> ' + value
-            }
-        }
 
         h3 'token'
         ul {
@@ -53,8 +44,16 @@ html {
             li 'id.sub : ' + token.id.sub
             li 'id.typ : ' + token.id.typ
 
-            token.id.address.forEach {
-                key, value -> li 'id.address.' + key + ' -> ' + value
+            if (token.id.address != null)
+                token.id.address.forEach {
+                    key, value -> li 'id.address.' + key + ' -> ' + value
+                }
+        }
+
+        h3 'user-info'
+        ul {
+            userInfo.forEach {
+                key, value -> li key + ' -> ' + value
             }
         }
     }
