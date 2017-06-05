@@ -148,7 +148,7 @@ public class Launcher {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, false);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         KeycloakToken token = mapper.readValue(response, KeycloakToken.class);
 
         for (String s : token.getIdToken().split("[.]")) {

@@ -8,7 +8,7 @@ html {
             yield 'li {white-space: nowrap;}'
         }
     }
-    body (style: 'overflow: hidden; width: 100%;') {
+    body (style: 'overflow-x: hidden; width: 100%;') {
         h1 'OpenId test'
 
         div 'state: ' + state
