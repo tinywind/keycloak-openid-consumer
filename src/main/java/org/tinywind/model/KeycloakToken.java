@@ -1,4 +1,4 @@
-package org.tinywind;
+package org.tinywind.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
