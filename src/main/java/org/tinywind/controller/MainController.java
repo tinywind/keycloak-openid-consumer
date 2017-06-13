@@ -58,6 +58,13 @@ public class MainController {
         return "user-info";
     }
 
+    @RequestMapping("user-info")
+    public String userInfoPage(Model model, String token) throws IOException {
+        model.addAttribute("userInfo", service.getUserInfo(token));
+
+        return "user-info";
+    }
+
     @RequestMapping("**")
     @ResponseBody
     public Map<String, String[]> anyPage(HttpServletRequest request) {
